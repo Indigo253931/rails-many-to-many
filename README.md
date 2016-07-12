@@ -32,3 +32,8 @@ For these challenges, continue to work in your `practice` Rails app.
 ## Stretch Challenge: Self-Referencing Assocations
 
 Lots of real-world apps create assocations between items that are the same type of resource.  Read (or reread) <a href="http://guides.rubyonrails.org/association_basics.html#self-joins" target="_blank">the "self joins" section of the Associations Basics Rails Guide</a> and try to create a self-referencing association in your `practice_associations` app.  (Classic use cases are friends and following, where both related resources would be users.) No solution provided.
+
+
+## Licensing
+All content is licensed under a CC­BY­NC­SA 4.0 license.
+All software code is licensed under GNU GPLv3. For commercial use or alternative licensing, please contact legal@ga.co.
