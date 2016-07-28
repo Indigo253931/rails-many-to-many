@@ -3,7 +3,7 @@
 ### Objectives
 *After this lesson, students will be able to:*
 
-- Build models with has_many, belongs_to, and has_many :through
+- Build models with has_and_belongs_to_many and has_many :through
 - Describe macros that match different relationship types
 
 ### Preparation
@@ -65,12 +65,18 @@ bands have many musicians?
 
 But then we come to him
 
-[] 
+<img src="https://github.com/den-wdi-1/rails-many-to-many/blob/master/2015PaulMcCartney_Press_060315.hero.jpg" width="300">
 
-Where does he go! 
+or worse him 
+
+<img src="https://github.com/den-wdi-1/rails-many-to-many/blob/master/miles_davis.jpg" width="300">
+
+Where does they go! 
 
 We have to enable a many-to-many relationship between bands and musicians. Rails offers two ways to create a many-to-many 
-relationships. Here's the three step process
+relationships. 
+
+Here's the three step process
 
 1. Add ``has_many_and_belongs_to_many :bands`` to the Musician model
 2. Add ``has_many_and_belongs_to_many :musicians`` to the Band model
@@ -98,17 +104,16 @@ the_mc = Musician.find_by first_name: 'Paul'
 the_mc.bands
 ```
 
+Rejoice!
 
-Rejoice
-
-[]
+<img src="https://github.com/den-wdi-1/rails-many-to-many/blob/master/rejoice.gif">
 
 Why do we need the extra table? Relational databases are defined so that each field can only hold one value. To include link 
 multiple items, we need multiple records. For one-to-many relationships we basically piggy back on the many side of the 
 relationship but for many-to-many relationships we need to store the information somewhere else.
 
 The down-side of this method of working with many-to-many relationships is that if need to actually work with the link 
-information it's very unintuitive.
+information it's very unintuitive. We create a BandsMusician model and what exactly is that?
  
 ## Many-to-Many
 
@@ -285,7 +290,6 @@ These are for your references and are not used nearly as often as `has_many` and
 
   * <a href="http://guides.rubyonrails.org/association_basics.html#the-has-one-association" target="_blank">has_one</a>
   * <a href="http://guides.rubyonrails.org/association_basics.html#the-has-one-through-association" target="_blank">has_one through</a>
-  * <a href="http://guides.rubyonrails.org/association_basics.html#has-and-belongs-to-many-association-reference" target="_blank">has_and_belongs_to_many</a>
 
 ## Useful Docs
 
