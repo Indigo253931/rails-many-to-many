@@ -15,26 +15,154 @@
 
 ## Why are relationships important?
 
-A hefty part of designing a relational database is dividing the data elements into related tables. Once you're ready to start working with the data, you rely on relationships between the tables to pull the data together in meaningful ways. For instance, order information is useless unless you know which customer placed a particular order.
+As we think about designing applications we naturally come across objects that have relationships. Bands have members, 
+Customers make orders. Stores have inventory.
 
-By now, you probably realize that you don't store customer and order information in the same table. Instead, you store order and customer data in two related tables and then use a relationship between the two tables to view each order and its corresponding customer information at the same time. If normalized tables are a relational database's foundation, then relationships are the cornerstone.
+ActiveRecord makes it easy to connect these logical relationships to a database. Previously we looked briefly at how to 
+connect models with a many-to-one and one-to-one relationships.  We saw that we could assocaite artists to songs and then 
+managers to songs through managers. 
 
-####Relationship types
+To we're going to build on these relationships to work through how to build a many-to-many relationships. These relationships
+require a bit more work than many-to-one relationships because of how relational database works. We'll work through how to 
+create these relationships in ActiveRecord that can be used in Rails and Sinatra.
 
-An association, in this context, is a connection between two ActiveRecord models. Associations are implemented using macro-style calls, so that you can declaratively add features to your models. For example, by declaring that one model belongs_to another, you instruct your application to maintain Primary Key-Foreign Key information between instances of the two models, and you also get a number of utility methods added to your model.
+## Goal
+We'll start by building the models in a blank rails app. We'll create a relationships between bands and musicians.
 
-- ```has_many``` - Indicates a one-to-many connection with another model. This association indicates that each instance of the model has zero or more instances of another model.
-- ```belongs_to``` - A belongs_to association sets up a one-to-one connection with another model, such that each instance of the declaring model "belongs to" one instance of the other model.
-- ```has_many :through``` - A has_many :through association is often used to set up a many-to-many connection with another model. This association indicates that the declaring model can be matched with zero or more instances of another model by proceeding through a third model.
+What our end goal? Our goal is that we'll be able to refer to ``bands.musicians`` and ``musicians.bands``. ``bands.musician``
+will act similar to an array. We'll be able to add and remove new musicians to a a band and get information about a musician 
+if I know a band. How do we do this?
 
-## Associations: Relationships Between Models
+### Create a baseline app
 
-| Relationship Type | Abbreviation | Description | Example |
-| :--- | :--- | :--- | :--- |
-| One-to-Many | 1:N | Parent model is associated with many children from another model | One author can have many books. |
-| Many-to-Many | N:N | Two models that can both be associated with many of the other. | Libraries and books. One library can have many books, while one book can be in many libraries. |
+Inside this repo create a new Rails app called bands. Remember to set the database to Postgres. You don't have to include 
+tests if you don't want to. 
+
+We'll also add two models to the app.
+
+Bands
+- Name
+- Formation Year
+
+Musician
+- First Name
+- Last Name 
+- Instrument
+
+Need help, here's the [ActiveRecord Migration Rails Guide](http://edgeguides.rubyonrails.org/active_record_migrations.html).
+
+## Creating a many-to-many relationship
+
+If we just wanted bands to have many musicians then we'd have an one-to-many relationship. What would we need to do make 
+bands have many musicians?
+
+<details>
+  We would need to do three things:
+  1. Add ``has_many :musicians`` to Band model
+  2. Add ``belongs_to :band`` to Musician model
+  3. Create a migration that adds the band reference to the musician table.
+</details>
+
+But then we come to him
+
+[] 
+
+Where does he go! 
+
+We have to enable a many-to-many relationship between bands and musicians. Rails offers two ways to create a many-to-many 
+relationships. Here's the three step process
+
+1. Add ``has_many_and_belongs_to_many :bands`` to the Musician model
+2. Add ``has_many_and_belongs_to_many :musicians`` to the Band model
+3. Create a migration that creates a new table to link the two models
+    1. On the command line type in ``rails g migration create_bands_musicians``
+    2. In the new migration add the following code
+
+    ```ruby
+       create_table :bands_musicians do |t|
+          t.belongs_to :band
+          t.belongs_to :musician
+        end
+    ```
+
+Lets associate everything back together. Open the rail console and lets look at the following:
+
+```
+paul = Musician.create({first_name: 'Paul', last_name: 'McCartney', instrument: 'bass'})
+beatles = Band.create({name: 'The Beatles', formation_year: 1960})
+wings = Band.create({name: 'Wings', formation_year: 1971})
+paul.bands << beatles
+paul.bands << wings
+paul.bands
+the_mc = Musician.find_by first_name: 'Paul'
+the_mc.bands
+```
 
 
+Rejoice
+
+[]
+
+Why do we need the extra table? Relational databases are defined so that each field can only hold one value. To include link 
+multiple items, we need multiple records. For one-to-many relationships we basically piggy back on the many side of the 
+relationship but for many-to-many relationships we need to store the information somewhere else.
+
+The down-side of this method of working with many-to-many relationships is that if need to actually work with the link 
+information it's very unintuitive.
+ 
+## Many-to-Many
+
+A second way to create to create that linking table yourself. It's very similar to the has many-through 
+
+Consider a second system of many-to-many relationships. If we are talking customers and items we might have customer have 
+many items by the link between them orders has importance in our application beyond just linking the customer to items.
+
+In this case our setup might look like 
+```ruby
+class Customer < ActiveRecord::Base 
+  has_many :orders
+  has_many :items, through: :orders
+end
+
+class Item < ActiveRecord::Base
+  has_many :orders
+  has_many :customers, through: :orders
+end
+
+class Order < ActiveRecord::Base
+  belongs_to :customer
+  belongs_to :order
+end
+
+class CreateBands < ActiveRecord::Migration[5.0]
+  def change
+    create_table :customers do |t|
+      t.string :name
+      t.string :address 
+
+      t.timestamps
+    end
+
+    create_table :items do |t|
+      t.string :name
+      t.string :address 
+
+      t.timestamps    
+    end
+
+    create_table :orders do |t|
+      t.belongs_to :item
+      t.belongs_to :customer
+      t.date :order_date
+
+    end
+  end
+end
+
+```
+
+
+<!--
 # SQL `JOIN`S
 
 ## Joins
@@ -86,8 +214,8 @@ rails g migration AddAgeToOwner age:integer
 
 # -- EITHER WAY --
 ### whether we're creating a new model or updating an existing one, we can manually edit our models and migrations in sublime
-# update associations in model --> this affects model interface
-# update foreign keys in migrations --> this affects database tables
+# update associations in model  this affects model interface
+# update foreign keys in migrations this affects database tables
 
 # generate schema for database tables
 rake db:migrate
@@ -141,14 +269,14 @@ For these challenges, continue to work in your `practice` Rails app.
 
 Lots of real-world apps create assocations between items that are the same type of resource.  Read (or reread) <a href="http://guides.rubyonrails.org/association_basics.html#self-joins" target="_blank">the "self joins" section of the Associations Basics Rails Guide</a> and try to create a self-referencing association in your `practice_associations` app.  (Classic use cases are friends and following, where both related resources would be users.) No solution provided.
 
-
+-->
 ## Helpful Hints
 
 When you're **creating associations** in Rails ActiveRecord (or most any ORM, for that matter):
 
   * Define the relationships in your models (the blueprint for your objects)
-    * Don't forget to define all sides of the relationship (e.g. `has_many` and `belongs_to`)
-  * Remember to put the foreign key for a relationship in your migration
+    * Don't forget to define all sides of the relationship (e.g. `has_many`, `belongs_to`, `has_many_and_belongs_to_many`)
+  * Remember to put the relationship in your migration
     * If you're not sure which side of the relationship has the foreign key, just use this simple rule: the model with `belongs_to` must include a foreign key.
 
 ## Less Common Associations
